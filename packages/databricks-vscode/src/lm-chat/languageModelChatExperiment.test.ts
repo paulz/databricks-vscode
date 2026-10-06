@@ -6,6 +6,7 @@ import {
     LANGUAGE_MODEL_CHAT_EXPERIMENT_ID,
     isLanguageModelChatEnabled,
 } from "./languageModelChatExperiment";
+import {UNITY_GATEWAY_VENDOR} from "./UnityGatewayChatProvider";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJson = require("../../package.json");
@@ -119,6 +120,26 @@ describe(__filename, () => {
             assert.ok(
                 when?.includes(FLAG_CONTEXT_KEY),
                 `${menu} entry for ${command}`
+            );
+        }
+    });
+
+    it("gates the Databricks chat vendor on the flag", () => {
+        const vendors = packageJson.contributes.languageModelChatProviders;
+        assert.deepStrictEqual(
+            vendors.map(({vendor}: any) => vendor),
+            [UNITY_GATEWAY_VENDOR]
+        );
+        for (const {vendor, when, managementCommand} of vendors) {
+            // Manage Models' gear isn't a way to sign in, and VS Code 1.104
+            // and 1.105 show it even with the flag off.
+            assert.equal(managementCommand, undefined, vendor);
+            assert.ok(
+                when
+                    ?.split("&&")
+                    .map((term: string) => term.trim())
+                    .includes(FLAG_CONTEXT_KEY),
+                `${vendor} when: ${when}`
             );
         }
     });

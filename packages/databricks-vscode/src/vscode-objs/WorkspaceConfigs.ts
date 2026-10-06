@@ -64,6 +64,16 @@ export const workspaceConfigs = {
             .get<Array<string>>("experiments.optInto", []);
     },
 
+    // Notify on changes to `experiments.optInto`. The caller owns the returned
+    // Disposable.
+    onDidChangeExperimentsOptInto(listener: () => void): Disposable {
+        return workspace.onDidChangeConfiguration((e) => {
+            if (e.affectsConfiguration("databricks.experiments.optInto")) {
+                listener();
+            }
+        });
+    },
+
     /**
      * set the python.envFile configuration in the ms-python extension
      */
